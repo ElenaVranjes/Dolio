@@ -1,0 +1,28 @@
+{
+  "project_info": {
+    "project_number": "678948113877",
+    "project_id": "dolio-app-elena",
+    "storage_bucket": "dolio-app-elena.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678948113877:android:b10065a4c9e5b4b3a8c15c",
+        "android_client_info": {
+          "package_name": "com.example.dolio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKnJ176QWj5FUT2FJeRpX6rt72dFKoqgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

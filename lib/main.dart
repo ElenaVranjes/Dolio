@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:dolio/screens/admin_panel_screen.dart';
 import 'package:dolio/screens/auth_screen.dart';
 import 'package:dolio/screens/favorites_screen.dart';
@@ -12,9 +13,12 @@ import 'providers/cart_provider.dart';
 import 'screens/root_screen.dart';
 
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); 
   runApp(const DolioApp());
 }
+
 
 class DolioApp extends StatelessWidget {
   const DolioApp({super.key});
