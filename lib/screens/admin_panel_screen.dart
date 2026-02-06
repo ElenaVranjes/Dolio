@@ -253,7 +253,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
                         if (isEdit) {
                           final updated = Product(
-                            id: existing!.id,
+                            id: existing.id,
                             name: nameController.text
                                 .trim(),
                             description:
