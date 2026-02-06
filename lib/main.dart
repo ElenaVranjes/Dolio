@@ -1,32 +1,34 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:dolio/screens/admin_panel_screen.dart';
-import 'package:dolio/screens/auth_screen.dart';
-import 'package:dolio/screens/favorites_screen.dart';
-import 'package:dolio/screens/product_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/products_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/orders_provider.dart';
 
 import 'screens/root_screen.dart';
-
+import 'screens/auth_screen.dart';
+import 'screens/product_detail_screen.dart';
+import 'screens/favorites_screen.dart';
+import 'screens/admin_panel_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/order_history_screen.dart';
+import 'screens/admin_orders_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); 
+  await Firebase.initializeApp();
   runApp(const DolioApp());
 }
-
 
 class DolioApp extends StatelessWidget {
   const DolioApp({super.key});
 
   ThemeData _buildTheme() {
-    const background = Color(0xFF121212); 
-    const surface = Color(0xFF1E1E1E);    
-    const primaryRed = Color(0xFFE53935); 
+    const background = Color(0xFF121212); // tamna pozadina
+    const surface = Color(0xFF1E1E1E);    // kartice, app bar
+    const primaryRed = Color(0xFFE53935); // glavna crvena
 
     final colorScheme = ColorScheme(
       brightness: Brightness.dark,
@@ -61,8 +63,10 @@ class DolioApp extends StatelessWidget {
         backgroundColor: surface,
         selectedItemColor: primaryRed,
         unselectedItemColor: Colors.grey.shade500,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+        selectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.w600),
+        unselectedLabelStyle:
+            const TextStyle(fontWeight: FontWeight.w500),
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
       ),
@@ -86,7 +90,8 @@ class DolioApp extends StatelessWidget {
         selectedColor: primaryRed,
         labelStyle: const TextStyle(color: Colors.white),
         secondarySelectedColor: primaryRed,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
         ),
@@ -101,6 +106,7 @@ class DolioApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductsProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrdersProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -112,9 +118,16 @@ class DolioApp extends StatelessWidget {
           AuthScreen.routeName: (_) => const AuthScreen(),
           ProductDetailScreen.routeName: (_) =>
               const ProductDetailScreen(),
-          FavoritesScreen.routeName: (_) => const FavoritesScreen(),
+          FavoritesScreen.routeName: (_) =>
+              const FavoritesScreen(),
           AdminPanelScreen.routeName: (_) =>
               const AdminPanelScreen(),
+          ProfileScreen.routeName: (_) =>
+              const ProfileScreen(),
+          OrderHistoryScreen.routeName: (_) =>
+              const OrderHistoryScreen(),
+          AdminOrdersScreen.routeName: (_) =>
+              const AdminOrdersScreen(),
         },
       ),
     );

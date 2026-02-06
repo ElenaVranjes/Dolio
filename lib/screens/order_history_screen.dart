@@ -1,0 +1,149 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/auth_provider.dart';
+import '../providers/orders_provider.dart';
+import '../models/order.dart';
+
+class OrderHistoryScreen extends StatefulWidget {
+  static const routeName = '/orders';
+
+  const OrderHistoryScreen({super.key});
+
+  @override
+  State<OrderHistoryScreen> createState() =>
+      _OrderHistoryScreenState();
+}
+
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final auth =
+          Provider.of<AuthProvider>(context, listen: false);
+      final orders =
+          Provider.of<OrdersProvider>(context, listen: false);
+
+      if (auth.isAuth) {
+        orders.fetchUserOrders(auth.displayName);
+      }
+      _initialized = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final ordersProv = Provider.of<OrdersProvider>(context);
+
+    if (!auth.isAuth) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Istorija narudžbina'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  'Za prikaz istorije narudžbina potrebno je da se prijavite.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Istorija narudžbina'),
+      ),
+      body: ordersProv.isLoadingUser
+          ? const Center(child: CircularProgressIndicator())
+          : ordersProv.userOrders.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Nemate prethodnih narudžbina.',
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: ordersProv.userOrders.length,
+                  itemBuilder: (ctx, i) {
+                    final order = ordersProv.userOrders[i];
+                    return _OrderCard(order: order);
+                  },
+                ),
+    );
+  }
+}
+
+class _OrderCard extends StatelessWidget {
+  final Order order;
+
+  const _OrderCard({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ExpansionTile(
+        title: Text(
+          'Ukupno: ${order.totalAmount.toStringAsFixed(0)} RSD',
+        ),
+        subtitle: Text(
+          '${order.status} • ${order.createdAt}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Ime i prezime: ${order.fullName}'),
+                Text('Adresa: ${order.address}'),
+                Text('Telefon: ${order.phone}'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Stavke:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                ...order.items.map(
+                  (item) => Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${item.name} x${item.quantity}',
+                        ),
+                      ),
+                      Text(
+                        '${item.price.toStringAsFixed(0)} RSD',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

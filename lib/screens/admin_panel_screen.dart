@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/products_provider.dart';
 import '../models/product.dart';
 import '../services/assets_manager.dart';
+import 'admin_orders_screen.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   static const routeName = '/admin-panel';
@@ -15,6 +16,7 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
+  
   static const Map<String, String> _imageOptions = {
     'Takmičarski kimono': AssetsManager.prodCompetitionKimono,
     'Crni pojas': AssetsManager.prodBlackBelt,
@@ -28,7 +30,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     final nameController =
         TextEditingController(text: existing?.name ?? '');
     final priceController = TextEditingController(
-        text: existing != null ? existing.price.toStringAsFixed(0) : '');
+      text: existing != null
+          ? existing.price.toStringAsFixed(0)
+          : '',
+    );
     final categoryController =
         TextEditingController(text: existing?.category ?? '');
     final descriptionController =
@@ -51,15 +56,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     selectedImageKey ??= _imageOptions.keys.first;
 
     final formKey = GlobalKey<FormState>();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor:
+          Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        final bottomInset = MediaQuery.of(ctx).viewInsets.bottom;
+        final bottomInset =
+            MediaQuery.of(ctx).viewInsets.bottom;
+
         return Padding(
           padding: EdgeInsets.only(
             left: 16,
@@ -76,14 +86,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   Container(
                     height: 4,
                     width: 40,
-                    margin: const EdgeInsets.only(bottom: 16),
+                    margin:
+                        const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade700,
-                      borderRadius: BorderRadius.circular(999),
+                      borderRadius:
+                          BorderRadius.circular(999),
                     ),
                   ),
                   Text(
-                    isEdit ? 'Izmena proizvoda' : 'Novi proizvod',
+                    isEdit
+                        ? 'Izmena proizvoda'
+                        : 'Novi proizvod',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
@@ -96,7 +110,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       labelText: 'Naziv proizvoda',
                     ),
                     validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
+                      if (val == null ||
+                          val.trim().isEmpty) {
                         return 'Unesite naziv proizvoda';
                       }
                       return null;
@@ -109,13 +124,18 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       labelText: 'Cena (RSD)',
                     ),
                     keyboardType:
-                        const TextInputType.numberWithOptions(decimal: false),
+                        const TextInputType.numberWithOptions(
+                      decimal: false,
+                    ),
                     validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
+                      if (val == null ||
+                          val.trim().isEmpty) {
                         return 'Unesite cenu';
                       }
-                      final num? parsed = num.tryParse(val);
-                      if (parsed == null || parsed <= 0) {
+                      final num? parsed =
+                          num.tryParse(val);
+                      if (parsed == null ||
+                          parsed <= 0) {
                         return 'Unesite ispravnu cenu';
                       }
                       return null;
@@ -125,7 +145,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   TextFormField(
                     controller: categoryController,
                     decoration: const InputDecoration(
-                      labelText: 'Kategorija (npr. Kimona, Oprema...)',
+                      labelText:
+                          'Kategorija (npr. Kimona, Oprema...)',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -140,7 +161,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   TextFormField(
                     controller: sizesController,
                     decoration: const InputDecoration(
-                      labelText: 'Veličine (npr. 150, 160, 170)',
+                      labelText:
+                          'Veličine (npr. 150, 160, 170)',
                       helperText: 'Odvojite zapetom',
                     ),
                   ),
@@ -148,7 +170,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   TextFormField(
                     controller: colorsController,
                     decoration: const InputDecoration(
-                      labelText: 'Boje (npr. Crvena, Plava)',
+                      labelText:
+                          'Boje (npr. Crvena, Plava)',
                       helperText: 'Odvojite zapetom',
                     ),
                   ),
@@ -160,7 +183,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
-                          ?.copyWith(color: Colors.white),
+                          ?.copyWith(
+                            color: Colors.white,
+                          ),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -170,7 +195,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Odaberite sliku',
                     ),
-                    items: _imageOptions.keys.map((label) {
+                    items: _imageOptions.keys
+                        .map((label) {
                       return DropdownMenuItem(
                         value: label,
                         child: Text(label),
@@ -188,7 +214,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (!formKey.currentState!.validate()) return;
+                        if (!formKey.currentState!
+                            .validate()) return;
 
                         final productsProvider =
                             Provider.of<ProductsProvider>(
@@ -197,49 +224,73 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         );
 
                         final imagePath =
-                            _imageOptions[selectedImageKey] ??
+                            _imageOptions[
+                                    selectedImageKey] ??
                                 (existing?.imageUrl ??
-                                    AssetsManager.prodCompetitionKimono);
+                                    AssetsManager
+                                        .prodCompetitionKimono);
 
                         final sizes = sizesController.text
                             .split(',')
-                            .map((s) => s.trim())
-                            .where((s) => s.isNotEmpty)
+                            .map(
+                                (s) => s.trim())
+                            .where(
+                                (s) => s.isNotEmpty)
                             .toList();
-                        final colors = colorsController.text
-                            .split(',')
-                            .map((s) => s.trim())
-                            .where((s) => s.isNotEmpty)
-                            .toList();
+                        final colors =
+                            colorsController.text
+                                .split(',')
+                                .map(
+                                    (s) => s.trim())
+                                .where((s) =>
+                                    s.isNotEmpty)
+                                .toList();
 
                         final price = double.parse(
-                            priceController.text.replaceAll(',', '.'));
+                          priceController.text
+                              .replaceAll(',', '.'),
+                        );
 
                         if (isEdit) {
                           final updated = Product(
-                            id: existing.id,
-                            name: nameController.text.trim(),
+                            id: existing!.id,
+                            name: nameController.text
+                                .trim(),
                             description:
-                                descriptionController.text.trim(),
-                            category: categoryController.text.trim(),
+                                descriptionController
+                                    .text
+                                    .trim(),
+                            category:
+                                categoryController.text
+                                    .trim(),
                             price: price,
                             imageUrl: imagePath,
                             sizes: sizes,
                             colors: colors,
-                            isPopular: existing.isPopular,
-                            isFavorite: existing.isFavorite,
+                            isPopular:
+                                existing.isPopular,
+                            isFavorite:
+                                existing.isFavorite,
                           );
-                          productsProvider.updateProduct(
-                              existing.id, updated);
+                          productsProvider
+                              .updateProduct(
+                            existing.id,
+                            updated,
+                          );
                         } else {
                           final newProduct = Product(
                             id: DateTime.now()
                                 .millisecondsSinceEpoch
                                 .toString(),
-                            name: nameController.text.trim(),
+                            name: nameController.text
+                                .trim(),
                             description:
-                                descriptionController.text.trim(),
-                            category: categoryController.text.trim(),
+                                descriptionController
+                                    .text
+                                    .trim(),
+                            category:
+                                categoryController.text
+                                    .trim(),
                             price: price,
                             imageUrl: imagePath,
                             sizes: sizes,
@@ -247,12 +298,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             isPopular: false,
                             isFavorite: false,
                           );
-                          productsProvider.addProduct(newProduct);
+                          productsProvider
+                              .addProduct(newProduct);
                         }
 
                         Navigator.of(ctx).pop();
                       },
-                      child: Text(isEdit ? 'Sačuvaj izmene' : 'Dodaj proizvod'),
+                      child: Text(
+                        isEdit
+                            ? 'Sačuvaj izmene'
+                            : 'Dodaj proizvod',
+                      ),
                     ),
                   ),
                 ],
@@ -266,16 +322,29 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productsProvider = Provider.of<ProductsProvider>(context);
+    final productsProvider =
+        Provider.of<ProductsProvider>(context);
     final products = productsProvider.items;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administratorski panel'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            tooltip: 'Sve narudžbine',
+            onPressed: () {
+              Navigator.of(context).pushNamed(
+                AdminOrdersScreen.routeName,
+              );
+            },
+          ),
+        ],
       ),
       body: ListView.separated(
         itemCount: products.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, __) =>
+            const Divider(height: 1),
         itemBuilder: (ctx, i) {
           final p = products[i];
           return ListTile(
@@ -299,15 +368,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () =>
-                      _openProductForm(context, existing: p),
+                      _openProductForm(context,
+                          existing: p),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    productsProvider.deleteProduct(p.id);
-                    ScaffoldMessenger.of(context).showSnackBar(
+                  onPressed: () async {
+                    await productsProvider
+                        .deleteProduct(p.id);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
                       SnackBar(
-                        content: Text('${p.name} je obrisan.'),
+                        content: Text(
+                          '${p.name} je obrisan.',
+                        ),
                       ),
                     );
                   },
@@ -317,8 +392,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openProductForm(context),
+      floatingActionButton:
+          FloatingActionButton(
+        onPressed: () =>
+            _openProductForm(context),
         child: const Icon(Icons.add),
       ),
     );

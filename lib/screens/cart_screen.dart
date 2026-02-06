@@ -3,10 +3,82 @@ import 'package:provider/provider.dart';
 
 import '../providers/cart_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/orders_provider.dart';
 import 'auth_screen.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
+
+  Future<void> _createOrder(BuildContext context) async {
+    final cart = Provider.of<CartProvider>(context, listen: false);
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final orders = Provider.of<OrdersProvider>(context, listen: false);
+
+    if (!auth.isAuth) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Morate biti prijavljeni da biste napravili narudžbinu.'),
+        ),
+      );
+      return;
+    }
+
+    if (cart.itemCount == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Korpa je prazna.'),
+        ),
+      );
+      return;
+    }
+
+    
+    if (auth.fullName.isEmpty || auth.address.isEmpty || auth.phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Popunite podatke u profilu (ime, adresu i telefon) pre naručivanja.'),
+        ),
+      );
+      return;
+    }
+
+    final items = cart.items.values.map((item) {
+      return {
+        'productId': item.productId,
+        'name': item.name,
+        'quantity': item.quantity,
+        'price': item.price,
+        // ako kasnije proširimo OrderItem na size/color
+        // 'size': item.size,
+        // 'color': item.color,
+      };
+    }).toList();
+
+    try {
+      await orders.createOrder(
+        userName: auth.displayName,
+        fullName: auth.fullName,
+        address: auth.address,
+        phone: auth.phone,
+        totalAmount: cart.totalAmount,
+        items: items,
+      );
+
+      cart.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Narudžbina je uspešno kreirana.'),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Došlo je do greške pri kreiranju narudžbine: $e'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,16 +131,7 @@ class CartScreen extends StatelessWidget {
                 TextButton(
                   onPressed: cart.itemCount == 0
                       ? null
-                      : () {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Simulacija kreiranja narudžbine...'),
-                            ),
-                          );
-                          cart.clear();
-                        },
+                      : () => _createOrder(context),
                   child: const Text('Plati'),
                 ),
               ],
