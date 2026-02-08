@@ -33,6 +33,7 @@ class CartScreen extends StatelessWidget {
       return;
     }
 
+    // Podaci za isporuku moraju biti popunjeni u profilu
     if (auth.fullName.isEmpty ||
         auth.address.isEmpty ||
         auth.phone.isEmpty) {
@@ -51,13 +52,15 @@ class CartScreen extends StatelessWidget {
         'name': item.name,
         'quantity': item.quantity,
         'price': item.price,
-        // ovde možeš kasnije dodati size/color
+        // ako kasnije dodamo veličinu/boju:
+        // 'size': item.size,
+        // 'color': item.color,
       };
     }).toList();
 
     try {
       await orders.createOrder(
-        userId: auth.userId,         // ⬅️ BITNO
+        userId: auth.userId,             // 🔴 BITNO
         userName: auth.displayName,
         fullName: auth.fullName,
         address: auth.address,
@@ -76,9 +79,8 @@ class CartScreen extends StatelessWidget {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Došlo je do greške pri kreiranju narudžbine: $e',
-          ),
+          content:
+              Text('Došlo je do greške pri kreiranju narudžbine: $e'),
         ),
       );
     }

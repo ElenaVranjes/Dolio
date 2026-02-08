@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/order.dart' as order_model;
+import '../models/order.dart' as model; // da izbegnemo konflikt sa Firestore enum Order
 
 class OrdersProvider with ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -9,17 +9,16 @@ class OrdersProvider with ChangeNotifier {
   bool _isLoadingUser = false;
   bool _isLoadingAdmin = false;
 
-  final List<order_model.Order> _userOrders = [];
-  final List<order_model.Order> _allOrders = [];
+  final List<model.Order> _userOrders = [];
+  final List<model.Order> _allOrders = [];
 
   bool get isLoadingUser => _isLoadingUser;
   bool get isLoadingAdmin => _isLoadingAdmin;
 
-  List<order_model.Order> get userOrders =>
-      List.unmodifiable(_userOrders);
-  List<order_model.Order> get allOrders =>
-      List.unmodifiable(_allOrders);
+  List<model.Order> get userOrders => List.unmodifiable(_userOrders);
+  List<model.Order> get allOrders => List.unmodifiable(_allOrders);
 
+  /// Kreiranje nove narudžbine iz korpe
   Future<void> createOrder({
     required String userId,
     required String userName,
@@ -53,6 +52,7 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
+  /// Istorija narudžbina za konkretnog korisnika
   Future<void> fetchUserOrders(String userId) async {
     if (userId.isEmpty) return;
 
@@ -60,17 +60,20 @@ class OrdersProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      // VAŽNO: bez orderBy da ne traži composite index
       final snap = await _db
           .collection('orders')
           .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
           .get();
+
+      if (kDebugMode) {
+        print('fetchUserOrders for $userId -> ${snap.docs.length} dokumenata');
+      }
 
       _userOrders
         ..clear()
         ..addAll(
-          snap.docs
-              .map((doc) => order_model.Order.fromFirestore(doc)),
+          snap.docs.map((doc) => model.Order.fromFirestore(doc)),
         );
     } catch (e) {
       if (kDebugMode) {
@@ -82,6 +85,7 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
+  /// Sve narudžbine za admina
   Future<void> fetchAllOrders() async {
     _isLoadingAdmin = true;
     notifyListeners();
@@ -92,11 +96,14 @@ class OrdersProvider with ChangeNotifier {
           .orderBy('createdAt', descending: true)
           .get();
 
+      if (kDebugMode) {
+        print('fetchAllOrders -> ${snap.docs.length} dokumenata');
+      }
+
       _allOrders
         ..clear()
         ..addAll(
-          snap.docs
-              .map((doc) => order_model.Order.fromFirestore(doc)),
+          snap.docs.map((doc) => model.Order.fromFirestore(doc)),
         );
     } catch (e) {
       if (kDebugMode) {
@@ -108,6 +115,7 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
+  /// Promena statusa narudžbine (za admina)
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     try {
       await _db
@@ -115,11 +123,11 @@ class OrdersProvider with ChangeNotifier {
           .doc(orderId)
           .update({'status': newStatus});
 
-      void updateList(List<order_model.Order> list) {
+      void updateList(List<model.Order> list) {
         final index = list.indexWhere((o) => o.id == orderId);
         if (index != -1) {
           final old = list[index];
-          list[index] = order_model.Order(
+          list[index] = model.Order(
             id: old.id,
             userId: old.userId,
             userName: old.userName,

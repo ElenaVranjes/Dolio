@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/orders_provider.dart';
-import '../models/order.dart' as order_model;
+import '../models/order.dart' as model; // ⬅ alias
 
 class OrderHistoryScreen extends StatefulWidget {
   static const routeName = '/orders';
@@ -15,19 +15,28 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  bool _initialized = false;
+  String? _lastUserId;
+  bool _requestedOnce = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_initialized) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      final orders = Provider.of<OrdersProvider>(context, listen: false);
 
-      if (auth.isAuth) {
-        orders.fetchUserOrders(auth.userId); // ⬅️ sada po UID-u
-      }
-      _initialized = true;
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final orders = Provider.of<OrdersProvider>(context, listen: false);
+
+    // Ako nije ulogovan – ne radi ništa
+    if (!auth.isAuth || auth.userId.isEmpty) {
+      _lastUserId = null;
+      _requestedOnce = false;
+      return;
+    }
+
+    // Ako se promenio korisnik ili prvi put ulazimo – povuci njegove narudžbine
+    if (auth.userId != _lastUserId || !_requestedOnce) {
+      _lastUserId = auth.userId;
+      _requestedOnce = true;
+      orders.fetchUserOrders(auth.userId);
     }
   }
 
@@ -70,7 +79,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: ordersProv.userOrders.length,
                   itemBuilder: (ctx, i) {
-                    final order = ordersProv.userOrders[i];
+                    final model.Order order = ordersProv.userOrders[i];
                     return _OrderCard(order: order);
                   },
                 ),
@@ -79,7 +88,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 }
 
 class _OrderCard extends StatelessWidget {
-  final order_model.Order order;
+  final model.Order order;
 
   const _OrderCard({required this.order});
 
