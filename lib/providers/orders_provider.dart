@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/order.dart' as dto;
+import '../models/order.dart' as order_model;
 
 class OrdersProvider with ChangeNotifier {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -9,17 +9,19 @@ class OrdersProvider with ChangeNotifier {
   bool _isLoadingUser = false;
   bool _isLoadingAdmin = false;
 
-  final List<dto.Order> _userOrders = [];
-  final List<dto.Order> _allOrders = [];
+  final List<order_model.Order> _userOrders = [];
+  final List<order_model.Order> _allOrders = [];
 
   bool get isLoadingUser => _isLoadingUser;
   bool get isLoadingAdmin => _isLoadingAdmin;
 
-  List<dto.Order> get userOrders => List.unmodifiable(_userOrders);
-  List<dto.Order> get allOrders => List.unmodifiable(_allOrders);
+  List<order_model.Order> get userOrders =>
+      List.unmodifiable(_userOrders);
+  List<order_model.Order> get allOrders =>
+      List.unmodifiable(_allOrders);
 
-  
   Future<void> createOrder({
+    required String userId,
     required String userName,
     required String fullName,
     required String address,
@@ -29,6 +31,7 @@ class OrdersProvider with ChangeNotifier {
   }) async {
     try {
       final docRef = await _db.collection('orders').add({
+        'userId': userId,
         'userName': userName,
         'fullName': fullName,
         'address': address,
@@ -50,21 +53,24 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
-  
-  Future<void> fetchUserOrders(String userName) async {
+  Future<void> fetchUserOrders(String userId) async {
+    if (userId.isEmpty) return;
+
     _isLoadingUser = true;
     notifyListeners();
 
     try {
       final snap = await _db
           .collection('orders')
+          .where('userId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
 
       _userOrders
         ..clear()
         ..addAll(
-          snap.docs.map((doc) => dto.Order.fromFirestore(doc)),
+          snap.docs
+              .map((doc) => order_model.Order.fromFirestore(doc)),
         );
     } catch (e) {
       if (kDebugMode) {
@@ -76,7 +82,6 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
-  
   Future<void> fetchAllOrders() async {
     _isLoadingAdmin = true;
     notifyListeners();
@@ -90,7 +95,8 @@ class OrdersProvider with ChangeNotifier {
       _allOrders
         ..clear()
         ..addAll(
-          snap.docs.map((doc) => dto.Order.fromFirestore(doc)),
+          snap.docs
+              .map((doc) => order_model.Order.fromFirestore(doc)),
         );
     } catch (e) {
       if (kDebugMode) {
@@ -102,7 +108,6 @@ class OrdersProvider with ChangeNotifier {
     }
   }
 
-  
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     try {
       await _db
@@ -110,13 +115,13 @@ class OrdersProvider with ChangeNotifier {
           .doc(orderId)
           .update({'status': newStatus});
 
-      
-      void updateList(List<dto.Order> list) {
+      void updateList(List<order_model.Order> list) {
         final index = list.indexWhere((o) => o.id == orderId);
         if (index != -1) {
           final old = list[index];
-          list[index] = dto.Order(
+          list[index] = order_model.Order(
             id: old.id,
+            userId: old.userId,
             userName: old.userName,
             fullName: old.fullName,
             address: old.address,

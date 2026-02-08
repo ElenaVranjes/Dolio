@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/auth_provider.dart';
 import '../providers/orders_provider.dart';
 import '../models/order.dart';
 
@@ -11,39 +10,32 @@ class AdminOrdersScreen extends StatefulWidget {
   const AdminOrdersScreen({super.key});
 
   @override
-  State<AdminOrdersScreen> createState() =>
-      _AdminOrdersScreenState();
+  State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
 }
 
 class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   bool _initialized = false;
 
+  static const List<String> _statusOptions = [
+    'Na čekanju',
+    'Plaćeno',
+    'Poslato',
+    'Otkazano',
+  ];
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final orders =
-          Provider.of<OrdersProvider>(context, listen: false);
-      orders.fetchAllOrders();
+      Provider.of<OrdersProvider>(context, listen: false)
+          .fetchAllOrders();
       _initialized = true;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
     final ordersProv = Provider.of<OrdersProvider>(context);
-
-    if (!auth.isAdmin) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Narudžbine'),
-        ),
-        body: const Center(
-          child: Text('Samo administrator ima pristup ovom ekranu.'),
-        ),
-      );
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -53,17 +45,21 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
           ? const Center(child: CircularProgressIndicator())
           : ordersProv.allOrders.isEmpty
               ? const Center(
-                  child: Text(
-                    'Još uvek nema nijedne narudžbine.',
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text('Nema zabeleženih narudžbina.'),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: ordersProv.allOrders.length,
                   itemBuilder: (ctx, i) {
                     final order = ordersProv.allOrders[i];
-                    return _AdminOrderCard(order: order);
+                    return _AdminOrderCard(
+                      order: order,
+                      onStatusChanged: (newStatus) {
+                        Provider.of<OrdersProvider>(context,
+                                listen: false)
+                            .updateOrderStatus(order.id, newStatus);
+                      },
+                    );
                   },
                 ),
     );
@@ -72,22 +68,40 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
 
 class _AdminOrderCard extends StatelessWidget {
   final Order order;
+  final ValueChanged<String> onStatusChanged;
 
-  const _AdminOrderCard({required this.order});
+  const _AdminOrderCard({
+    required this.order,
+    required this.onStatusChanged,
+  });
+
+  String _formatDate(DateTime dt) {
+    final d = dt.toLocal();
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString();
+    final hh = d.hour.toString().padLeft(2, '0');
+    final min = d.minute.toString().padLeft(2, '0');
+    return '$dd.$mm.$yyyy. $hh:$min';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final ordersProv =
-        Provider.of<OrdersProvider>(context, listen: false);
+    const statusOptions = [
+      'Na čekanju',
+      'Plaćeno',
+      'Poslato',
+      'Otkazano',
+    ];
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
         title: Text(
-          '${order.fullName} • ${order.totalAmount.toStringAsFixed(0)} RSD',
+          '${order.userName} • ${order.totalAmount.toStringAsFixed(0)} RSD',
         ),
         subtitle: Text(
-          '${order.status} • ${order.createdAt}',
+          '${order.status} • ${_formatDate(order.createdAt)}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -100,7 +114,7 @@ class _AdminOrderCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Korisnik: ${order.userName}'),
+                Text('Ime i prezime: ${order.fullName}'),
                 Text('Adresa: ${order.address}'),
                 Text('Telefon: ${order.phone}'),
                 const SizedBox(height: 8),
@@ -129,29 +143,23 @@ class _AdminOrderCard extends StatelessWidget {
                 Row(
                   children: [
                     const Text(
-                      'Status:',
+                      'Status: ',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 8),
                     DropdownButton<String>(
                       value: order.status,
-                      items: const [
-                        'Na čekanju',
-                        'Plaćeno',
-                        'Poslato',
-                        'Otkazano',
-                      ].map((status) {
-                        return DropdownMenuItem(
-                          value: status,
-                          child: Text(status),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value == null) return;
-                        ordersProv.updateOrderStatus(
-                          order.id,
-                          value,
-                        );
+                      items: statusOptions
+                          .map(
+                            (s) => DropdownMenuItem(
+                              value: s,
+                              child: Text(s),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        if (val == null) return;
+                        onStatusChanged(val);
                       },
                     ),
                   ],

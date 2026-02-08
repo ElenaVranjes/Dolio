@@ -17,7 +17,8 @@ class CartScreen extends StatelessWidget {
     if (!auth.isAuth) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Morate biti prijavljeni da biste napravili narudžbinu.'),
+          content:
+              Text('Morate biti prijavljeni da biste napravili narudžbinu.'),
         ),
       );
       return;
@@ -32,11 +33,13 @@ class CartScreen extends StatelessWidget {
       return;
     }
 
-    
-    if (auth.fullName.isEmpty || auth.address.isEmpty || auth.phone.isEmpty) {
+    if (auth.fullName.isEmpty ||
+        auth.address.isEmpty ||
+        auth.phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Popunite podatke u profilu (ime, adresu i telefon) pre naručivanja.'),
+          content: Text(
+              'Popunite podatke u profilu (ime, adresu i telefon) pre naručivanja.'),
         ),
       );
       return;
@@ -48,14 +51,13 @@ class CartScreen extends StatelessWidget {
         'name': item.name,
         'quantity': item.quantity,
         'price': item.price,
-        // ako kasnije proširimo OrderItem na size/color
-        // 'size': item.size,
-        // 'color': item.color,
+        // ovde možeš kasnije dodati size/color
       };
     }).toList();
 
     try {
       await orders.createOrder(
+        userId: auth.userId,         // ⬅️ BITNO
         userName: auth.displayName,
         fullName: auth.fullName,
         address: auth.address,
@@ -74,7 +76,9 @@ class CartScreen extends StatelessWidget {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Došlo je do greške pri kreiranju narudžbine: $e'),
+          content: Text(
+            'Došlo je do greške pri kreiranju narudžbine: $e',
+          ),
         ),
       );
     }
@@ -99,8 +103,7 @@ class CartScreen extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context)
-                      .pushNamed(AuthScreen.routeName);
+                  Navigator.of(context).pushNamed(AuthScreen.routeName);
                 },
                 child: const Text('Prijava / Registracija'),
               ),
@@ -129,9 +132,8 @@ class CartScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 TextButton(
-                  onPressed: cart.itemCount == 0
-                      ? null
-                      : () => _createOrder(context),
+                  onPressed:
+                      cart.itemCount == 0 ? null : () => _createOrder(context),
                   child: const Text('Plati'),
                 ),
               ],
@@ -155,11 +157,9 @@ class CartScreen extends StatelessWidget {
                       child: ListTile(
                         title: Text(item.name),
                         subtitle: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (item.size != null ||
-                                item.color != null)
+                            if (item.size != null || item.color != null)
                               Text(
                                 '${item.size != null ? 'Veličina: ${item.size}' : ''}'
                                 '${item.size != null && item.color != null ? ' • ' : ''}'
@@ -172,27 +172,23 @@ class CartScreen extends StatelessWidget {
                         ),
                         leading: IconButton(
                           icon: const Icon(Icons.delete),
-                          onPressed: () =>
-                              cart.removeItem(item.id),
+                          onPressed: () => cart.removeItem(item.id),
                         ),
                         trailing: SizedBox(
                           width: 110,
                           child: Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               IconButton(
                                 icon: const Icon(Icons.remove),
                                 onPressed: () =>
-                                    cart.decreaseQuantity(
-                                        item.id),
+                                    cart.decreaseQuantity(item.id),
                               ),
                               Text(item.quantity.toString()),
                               IconButton(
                                 icon: const Icon(Icons.add),
                                 onPressed: () =>
-                                    cart.increaseQuantity(
-                                        item.id),
+                                    cart.increaseQuantity(item.id),
                               ),
                             ],
                           ),

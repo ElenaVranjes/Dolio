@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/orders_provider.dart';
-import '../models/order.dart';
+import '../models/order.dart' as order_model;
 
 class OrderHistoryScreen extends StatefulWidget {
   static const routeName = '/orders';
@@ -11,8 +11,7 @@ class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
 
   @override
-  State<OrderHistoryScreen> createState() =>
-      _OrderHistoryScreenState();
+  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
@@ -22,13 +21,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final auth =
-          Provider.of<AuthProvider>(context, listen: false);
-      final orders =
-          Provider.of<OrdersProvider>(context, listen: false);
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final orders = Provider.of<OrdersProvider>(context, listen: false);
 
       if (auth.isAuth) {
-        orders.fetchUserOrders(auth.displayName);
+        orders.fetchUserOrders(auth.userId); // ⬅️ sada po UID-u
       }
       _initialized = true;
     }
@@ -44,17 +41,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         appBar: AppBar(
           title: const Text('Istorija narudžbina'),
         ),
-        body: Center(
+        body: const Center(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  'Za prikaz istorije narudžbina potrebno je da se prijavite.',
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            padding: EdgeInsets.all(24.0),
+            child: Text(
+              'Za prikaz istorije narudžbina potrebno je da se prijavite.',
+              textAlign: TextAlign.center,
             ),
           ),
         ),
@@ -87,7 +79,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 }
 
 class _OrderCard extends StatelessWidget {
-  final Order order;
+  final order_model.Order order;
 
   const _OrderCard({required this.order});
 
@@ -124,8 +116,7 @@ class _OrderCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 ...order.items.map(
                   (item) => Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Text(

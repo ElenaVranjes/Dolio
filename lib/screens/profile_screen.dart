@@ -8,8 +8,7 @@ import '../screens/auth_screen.dart';
 import '../screens/order_history_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  static const routeName = '/profile';
-
+  static const routeName = '/profile'; 
   const ProfileScreen({super.key});
 
   @override
@@ -44,18 +43,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _saveProfile() {
+  void _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
     FocusScope.of(context).unfocus();
 
-    Provider.of<AuthProvider>(context, listen: false)
+    await Provider.of<AuthProvider>(context, listen: false)
         .updateProfile(
       fullName: _fullNameController.text.trim(),
       address: _addressController.text.trim(),
       phone: _phoneController.text.trim(),
     );
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Profil je uspešno sačuvan.'),
@@ -157,9 +157,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ListTile(
             leading: const Icon(Icons.history),
             title: const Text('Istorija narudžbina'),
+            subtitle:
+                const Text('Pregled prethodnih narudžbina.'),
             onTap: () {
-              Navigator.of(context)
-                  .pushNamed(OrderHistoryScreen.routeName);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const OrderHistoryScreen(),
+                ),
+              );
             },
           ),
           const Divider(),
@@ -170,7 +175,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: const Text('Administratorski panel'),
               onTap: () {
                 Navigator.of(context).pushNamed(
-                    AdminPanelScreen.routeName);
+                  AdminPanelScreen.routeName,
+                );
               },
             ),
             const Divider(),

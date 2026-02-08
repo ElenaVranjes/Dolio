@@ -5,6 +5,7 @@ import '../providers/products_provider.dart';
 import '../models/product.dart';
 import '../services/assets_manager.dart';
 import 'admin_orders_screen.dart';
+import 'admin_users_screen.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   static const routeName = '/admin-panel';
@@ -16,7 +17,6 @@ class AdminPanelScreen extends StatefulWidget {
 }
 
 class _AdminPanelScreenState extends State<AdminPanelScreen> {
-  
   static const Map<String, String> _imageOptions = {
     'Takmičarski kimono': AssetsManager.prodCompetitionKimono,
     'Crni pojas': AssetsManager.prodBlackBelt,
@@ -56,20 +56,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     selectedImageKey ??= _imageOptions.keys.first;
 
     final formKey = GlobalKey<FormState>();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor:
           Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
       ),
       builder: (ctx) {
         final bottomInset =
             MediaQuery.of(ctx).viewInsets.bottom;
-
         return Padding(
           padding: EdgeInsets.only(
             left: 16,
@@ -86,8 +85,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   Container(
                     height: 4,
                     width: 40,
-                    margin:
-                        const EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(
+                      bottom: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade700,
                       borderRadius:
@@ -134,8 +134,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       }
                       final num? parsed =
                           num.tryParse(val);
-                      if (parsed == null ||
-                          parsed <= 0) {
+                      if (parsed == null || parsed <= 0) {
                         return 'Unesite ispravnu cenu';
                       }
                       return null;
@@ -183,9 +182,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
-                          ?.copyWith(
-                            color: Colors.white,
-                          ),
+                          ?.copyWith(color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -196,12 +193,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       labelText: 'Odaberite sliku',
                     ),
                     items: _imageOptions.keys
-                        .map((label) {
-                      return DropdownMenuItem(
-                        value: label,
-                        child: Text(label),
-                      );
-                    }).toList(),
+                        .map(
+                          (label) => DropdownMenuItem(
+                            value: label,
+                            child: Text(label),
+                          ),
+                        )
+                        .toList(),
                     onChanged: (value) {
                       if (value == null) return;
                       setState(() {
@@ -224,24 +222,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         );
 
                         final imagePath =
-                            _imageOptions[
-                                    selectedImageKey] ??
+                            _imageOptions[selectedImageKey] ??
                                 (existing?.imageUrl ??
                                     AssetsManager
                                         .prodCompetitionKimono);
 
-                        final sizes = sizesController.text
-                            .split(',')
-                            .map(
-                                (s) => s.trim())
-                            .where(
-                                (s) => s.isNotEmpty)
-                            .toList();
+                        final sizes =
+                            sizesController.text
+                                .split(',')
+                                .map((s) => s.trim())
+                                .where((s) =>
+                                    s.isNotEmpty)
+                                .toList();
                         final colors =
                             colorsController.text
                                 .split(',')
-                                .map(
-                                    (s) => s.trim())
+                                .map((s) => s.trim())
                                 .where((s) =>
                                     s.isNotEmpty)
                                 .toList();
@@ -257,8 +253,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             name: nameController.text
                                 .trim(),
                             description:
-                                descriptionController
-                                    .text
+                                descriptionController.text
                                     .trim(),
                             category:
                                 categoryController.text
@@ -274,9 +269,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           );
                           productsProvider
                               .updateProduct(
-                            existing.id,
-                            updated,
-                          );
+                                  existing.id,
+                                  updated);
                         } else {
                           final newProduct = Product(
                             id: DateTime.now()
@@ -285,8 +279,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             name: nameController.text
                                 .trim(),
                             description:
-                                descriptionController
-                                    .text
+                                descriptionController.text
                                     .trim(),
                             category:
                                 categoryController.text
@@ -299,7 +292,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             isFavorite: false,
                           );
                           productsProvider
-                              .addProduct(newProduct);
+                              .addProduct(
+                                  newProduct);
                         }
 
                         Navigator.of(ctx).pop();
@@ -331,11 +325,26 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         title: const Text('Administratorski panel'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.receipt_long),
             tooltip: 'Sve narudžbine',
+            icon: const Icon(Icons.receipt_long),
             onPressed: () {
-              Navigator.of(context).pushNamed(
-                AdminOrdersScreen.routeName,
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const AdminOrdersScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Registrovani korisnici',
+            icon: const Icon(Icons.people),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const AdminUsersScreen(),
+                ),
               );
             },
           ),
@@ -349,7 +358,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           final p = products[i];
           return ListTile(
             leading: ClipRRect(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius:
+                  BorderRadius.circular(999),
               child: Image.asset(
                 p.imageUrl,
                 width: 48,
@@ -360,7 +370,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             title: Text(p.name),
             subtitle: Text(
               '${p.price.toStringAsFixed(0)} RSD',
-              style: const TextStyle(color: Colors.grey),
+              style: const TextStyle(
+                color: Colors.grey,
+              ),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -373,10 +385,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete),
-                  onPressed: () async {
-                    await productsProvider
+                  onPressed: () {
+                    productsProvider
                         .deleteProduct(p.id);
-                    if (!mounted) return;
                     ScaffoldMessenger.of(context)
                         .showSnackBar(
                       SnackBar(
@@ -394,8 +405,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       ),
       floatingActionButton:
           FloatingActionButton(
-        onPressed: () =>
-            _openProductForm(context),
+        onPressed: () => _openProductForm(context),
         child: const Icon(Icons.add),
       ),
     );
